@@ -10,7 +10,7 @@ const BotHeader = ({
   setAutoplay: (toggle: boolean) => void;
 }) => {
   return (
-    <div className="flex w-screen gap-2 py-4 px-page border-b justify-between">
+    <div className="flex w-screen gap-2 py-4 px-page border-b justify-between sticky top-0 bg-white">
       <div className="flex gap-2">
         <ImageRound src="/bot.webp" className="lg:w-16 lg:h-16 w-10 h-10" />
         <div className="flex flex-col self-center">

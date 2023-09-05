@@ -1,3 +1,4 @@
+import { OpenAIStream, StreamingTextResponse } from "ai";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
@@ -20,8 +21,11 @@ export async function POST(request: Request) {
     const completion = await openai.chat.completions.create({
       messages: messages,
       model: "gpt-3.5-turbo",
+      stream: true,
     });
-    return NextResponse.json({ result: completion.choices }, { status: 200 });
+
+    const stream = OpenAIStream(completion);
+    return new StreamingTextResponse(stream);
   } catch (error: any) {
     // Consider adjusting the error handling logic for your use case
     if (error.response) {

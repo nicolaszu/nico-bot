@@ -5,9 +5,15 @@ import { IconButton } from "./IconButton";
 const BotMessage = ({
   content,
   autoplay = false,
+  isDoneStreaming = true,
+  isLastMessage = false,
+  forceStopAudio = false,
 }: {
   content: string;
   autoplay?: boolean;
+  isDoneStreaming?: boolean;
+  isLastMessage?: boolean;
+  forceStopAudio?: boolean;
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -15,7 +21,6 @@ const BotMessage = ({
 
   const handlePlayAudio = async () => {
     setIsPlaying(true);
-
     if (!audioRef.current) {
       await fetchAndPlayAudio();
     }
@@ -29,10 +34,16 @@ const BotMessage = ({
   };
 
   useEffect(() => {
-    if (autoplay) {
+    if (autoplay && isDoneStreaming && isLastMessage) {
       fetchAndPlayAudio();
     }
-  }, []);
+  }, [isDoneStreaming]);
+
+  useEffect(() => {
+    if (forceStopAudio && audioRef!.current) {
+      handlePauseAudio();
+    }
+  }, [forceStopAudio]);
 
   const fetchAndPlayAudio = async () => {
     setIsLoading(true);
@@ -112,7 +123,13 @@ const BotMessage = ({
             />
           )}
         </div>
-        <p className=" whitespace-pre-wrap prose lg:prose-xl max-w-screen-md mx-auto  bg-white text-gray-800 leading-relaxed">
+        <p
+          className={` whitespace-pre-wrap prose lg:prose-xl max-w-screen-md mx-auto  bg-white text-gray-800 leading-relaxed ${
+            isLastMessage &&
+            !isDoneStreaming &&
+            "after:w-3 after:h-3  after:animate-blink-fast after:bg-blue-500 after:inline-block after:ml-1"
+          }`}
+        >
           {content}
         </p>
       </div>

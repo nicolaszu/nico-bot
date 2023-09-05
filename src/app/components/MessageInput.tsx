@@ -18,7 +18,7 @@ const MessageInput = ({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && input !== "") {
       onSend(event.currentTarget.value);
       event.currentTarget.value = "";
       setInput("");
@@ -55,7 +55,7 @@ const MessageInput = ({
         type="text"
         autoFocus
         placeholder="Escribe aquí tu mensaje"
-        className="flex h-10 w-full rounded-md border border-input bg-slate-200 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="focus:ring-0 focus-visible:ring-0 resize-none flex h-10 w-full rounded-md border border-input bg-slate-100 brod px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium  focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       />
       {input !== "" && (
         <IconButton

@@ -116,7 +116,7 @@ function AudioRecorder({
   };
 
   return (
-    <div className={`w-full ${className} `}>
+    <div className={`w-full ${className}`}>
       <>
         {!recordingInitiated ? (
           <IconButton
