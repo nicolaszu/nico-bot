@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
 import textToSpeech from "@google-cloud/text-to-speech";
-import fs from "fs";
-import util from "util";
 import { google } from "@google-cloud/text-to-speech/build/protos/protos";
-import { Readable, ReadableOptions, Stream } from "stream";
 import { GoogleAuth } from "google-auth-library";
 
-console.log(process.env.GOOGLE_SERVICE_KEY);
-console.log("breaks");
 const credentials = JSON.parse(
-  Buffer.from(process.env.GOOGLE_SERVICE_KEY, "base64").toString()
+  Buffer.from(process.env.GOOGLE_SERVICE_KEY || "", "base64").toString()
 );
 const auth = new GoogleAuth({ credentials });
 const client = new textToSpeech.TextToSpeechClient({ auth });
