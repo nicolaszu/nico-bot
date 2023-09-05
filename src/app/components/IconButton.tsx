@@ -25,7 +25,13 @@ export const IconButton = ({
         disabled ? "grayscale-[1]" : "hover:bg-gray-100 cursor-pointer"
       } ${className} `}
     >
-      <Image src={src} alt="default logo" width={width} height={height} />
+      <Image
+        src={src}
+        alt="default logo"
+        width={width}
+        height={height}
+        priority
+      />
     </div>
   );
 };
