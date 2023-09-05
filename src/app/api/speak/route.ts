@@ -4,10 +4,15 @@ import fs from "fs";
 import util from "util";
 import { google } from "@google-cloud/text-to-speech/build/protos/protos";
 import { Readable, ReadableOptions, Stream } from "stream";
+import { GoogleAuth } from "google-auth-library";
 
-const client = new textToSpeech.TextToSpeechClient({
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-});
+console.log(process.env.GOOGLE_SERVICE_KEY);
+console.log("breaks");
+const credentials = JSON.parse(
+  Buffer.from(process.env.GOOGLE_SERVICE_KEY, "base64").toString()
+);
+const auth = new GoogleAuth({ credentials });
+const client = new textToSpeech.TextToSpeechClient({ auth });
 
 export async function POST(request: Request) {
   try {
