@@ -6,7 +6,11 @@ import BotMessage from "./components/BotMessage";
 import MessageInput from "./components/MessageInput";
 import UserMessage from "./components/UserMessage";
 import { PROMPT, WELCOME_MESSAGE } from "./constants/defaults";
-import AudioRecorder from "./components/AudioRecorder";
+import dynamic from "next/dynamic";
+
+const AudioRecorder = dynamic(() => import("./components/AudioRecorder"), {
+  ssr: false,
+});
 
 type Message = { content: string; role: Role };
 type Role = "user" | "assistant" | "system";
@@ -82,11 +86,11 @@ export default function Home() {
     }
   };
 
-  const onSendAudio = async (audioBlob: Blob) => {
+  const onSendAudio = async (audioBlob: Blob, ext: string) => {
     setIsLoadingTextFromAudio(true);
     try {
       const formData = new FormData();
-      formData.append("file", audioBlob, "audio.wav");
+      formData.append("file", audioBlob, `audio.${ext}`);
       const response = await fetch(`${window.location.origin}/api/whisper`, {
         method: "POST",
         body: formData,
@@ -161,7 +165,7 @@ export default function Home() {
         )}
         {!isTextInput && (
           <AudioRecorder
-            className={isAudioInput ? "col-span-full" : ""}
+            className={isAudioInput ? "col-span-full col-end-[none]" : ""}
             onSend={onSendAudio}
             disabled={isLoading || isLoadingTextFromAudio}
             onStart={() => setIsAudioInput(true)}

@@ -21,16 +21,21 @@ export const IconButton = ({
   return (
     <div
       onClick={disabled ? () => {} : onClick}
-      className={` rounded-full self-center p-2 h-fit w-fit ${
+      className={`no_highlights rounded-full self-center p-2 h-fit w-fit ${
         disabled ? "grayscale-[1]" : "hover:bg-gray-100 cursor-pointer"
       } ${className} `}
     >
       <Image
+        onContextMenu={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
         src={src}
         alt="default logo"
         width={width}
         height={height}
         priority
+        draggable={false}
       />
     </div>
   );

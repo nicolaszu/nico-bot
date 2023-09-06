@@ -1,4 +1,5 @@
-import Image from "next/image";
+"use client";
+
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { IconButton } from "./IconButton";
 
@@ -10,7 +11,7 @@ function AudioRecorder({
   className,
 }: {
   onStart: () => void;
-  onSend: (audio: Blob) => void;
+  onSend: (audio: Blob, mimeType: string) => void;
   onDiscard: () => void;
   disabled?: boolean;
   className?: string;
@@ -42,7 +43,7 @@ function AudioRecorder({
 
   useEffect(() => {
     if (!isRecording && recordingInitiated) {
-      const audioBlob = new Blob(chunks, { type: "audio/wav" });
+      const audioBlob = new Blob(chunks, { type: mimeOption.type });
       const audioUrl = URL.createObjectURL(audioBlob);
       audioRef.current = new Audio(audioUrl);
       setDurationAudio(durationRecoding.getSeconds());
@@ -52,14 +53,33 @@ function AudioRecorder({
     }
   }, [isRecording, recordingInitiated, chunks]);
 
+  const mimeOption = useMemo(() => {
+    if (window.MediaRecorder.isTypeSupported("audio/wav")) {
+      return { type: "audio/wav", ext: "wav" };
+    } else if (window.MediaRecorder.isTypeSupported("video/mp4")) {
+      return { type: "video/mp4", ext: "mp4" };
+    } else if (window.MediaRecorder.isTypeSupported("audio/webm")) {
+      return { type: "audio/webm", ext: "webm" };
+    } else {
+      return { type: "", ext: "mp3" };
+    }
+  }, []);
+
   const handleStartRecording = () => {
-    onStart();
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      mediaRecorderRef.current = new MediaRecorder(stream, {
+        mimeType: mimeOption.type,
+      });
       mediaRecorderRef.current.ondataavailable = (event) => {
         setChunks((prev) => [...prev, event.data]);
       };
+
+      mediaRecorderRef.current.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+      };
+
       mediaRecorderRef.current.start();
+      onStart();
       setRecordingInitiated(true);
       setIsRecording(true);
     });
@@ -103,89 +123,87 @@ function AudioRecorder({
       handleStopRecording();
       mediaRecorderRef!.current!.ondataavailable = (event) => {
         const audioBlob = new Blob([...chunks, event.data], {
-          type: "audio/wav",
+          type: mimeOption.type,
         });
         handleDiscardAudio();
-        onSend(audioBlob);
+        onSend(audioBlob, mimeOption.ext);
       };
     } else {
-      const audioBlob = new Blob(chunks, { type: "audio/wav" });
+      const audioBlob = new Blob(chunks, { type: mimeOption.type });
       handleDiscardAudio();
-      onSend(audioBlob);
+      onSend(audioBlob, mimeOption.ext);
     }
   };
 
   return (
-    <div className={`w-full ${className}`}>
-      <>
-        {!recordingInitiated ? (
-          <IconButton
-            disabled={disabled}
-            src="/mic.svg"
-            onClick={handleStartRecording}
-          />
-        ) : (
-          <>
-            <div className="grid grid-cols-[auto_1fr_auto_auto] w-full gap-2">
-              <IconButton
-                disabled={disabled}
-                src="/bin.svg"
-                onClick={handleDiscardAudio}
-              />
-              {isRecording ? (
-                <div className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-md w-full">
-                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <p className="text-gray-600 font-medium ">
-                    {durationRecoding.toISOString().substring(14, 19)}
-                  </p>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-md w-full">
-                  <p className="text-gray-600 font-medium ">
-                    {new Date(progress * 1000).toISOString().substring(14, 19)}
-                  </p>
-                  <progress
-                    className="w-full"
-                    value={progress}
-                    max={durationAudio}
-                  />
-                </div>
-              )}
-
-              {!isRecording ? (
-                <>
-                  {isPlaying ? (
-                    <IconButton
-                      disabled={disabled}
-                      src="/pause.svg"
-                      onClick={handlePauseAudio}
-                    />
-                  ) : (
-                    <IconButton
-                      disabled={disabled}
-                      src="/play.svg"
-                      onClick={handlePlayAudio}
-                    />
-                  )}
-                </>
-              ) : (
-                <IconButton
-                  disabled={disabled}
-                  src="/pause.svg"
-                  onClick={handleStopRecording}
-                  className=" hover:bg-red-100"
+    <div className={`w-full flex justify-end ${className}`}>
+      {!recordingInitiated ? (
+        <IconButton
+          disabled={disabled}
+          src="/mic.svg"
+          onClick={handleStartRecording}
+        />
+      ) : (
+        <>
+          <div className="grid grid-cols-[auto_1fr_auto_auto] w-full gap-2">
+            <IconButton
+              disabled={disabled}
+              src="/bin.svg"
+              onClick={handleDiscardAudio}
+            />
+            {isRecording ? (
+              <div className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-md w-full">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <p className="text-gray-600 font-medium ">
+                  {durationRecoding.toISOString().substring(14, 19)}
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-md w-full">
+                <p className="text-gray-600 font-medium ">
+                  {new Date(progress * 1000).toISOString().substring(14, 19)}
+                </p>
+                <progress
+                  className="w-full"
+                  value={progress}
+                  max={durationAudio}
                 />
-              )}
+              </div>
+            )}
+
+            {!isRecording ? (
+              <>
+                {isPlaying ? (
+                  <IconButton
+                    disabled={disabled}
+                    src="/pause.svg"
+                    onClick={handlePauseAudio}
+                  />
+                ) : (
+                  <IconButton
+                    disabled={disabled}
+                    src="/play.svg"
+                    onClick={handlePlayAudio}
+                  />
+                )}
+              </>
+            ) : (
               <IconButton
                 disabled={disabled}
-                src="/send.svg"
-                onClick={send}
-                className=" hover:bg-blue-100"
+                src="/pause.svg"
+                onClick={handleStopRecording}
+                className=" hover:bg-red-100"
               />
-            </div>
-          </>
-        )}
-      </>
+            )}
+            <IconButton
+              disabled={disabled}
+              src="/send.svg"
+              onClick={send}
+              className=" hover:bg-blue-100"
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
