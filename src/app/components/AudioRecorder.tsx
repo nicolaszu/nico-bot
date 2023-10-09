@@ -78,7 +78,7 @@ function AudioRecorder({
         stream.getTracks().forEach((t) => t.stop());
       };
 
-      mediaRecorderRef.current.start();
+      mediaRecorderRef.current.start(1000);
       onStart();
       setRecordingInitiated(true);
       setIsRecording(true);
